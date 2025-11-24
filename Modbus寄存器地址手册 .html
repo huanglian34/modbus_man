@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modbus寄存器地址手册 - 二号板与BMS保护板</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            font-size: 16px;
+            line-height: 1.75;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            position: relative;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 20%), 
+                        radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 20%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+        }
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            animation: float 6s ease-in-out infinite;
+        }
+        .shape:nth-child(1) {
+            width: 150px;
+            height: 150px;
+            top: 10%;
+            left: 20%;
+            animation-delay: 0s;
+        }
+        .shape:nth-child(2) {
+            width: 100px;
+            height: 100px;
+            top: 60%;
+            left: 80%;
+            animation-delay: 2s;
+        }
+        .shape:nth-child(3) {
+            width: 80px;
+            height: 80px;
+            top: 30%;
+            left: 70%;
+            animation-delay: 4s;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 36px;
+            border-radius: 15px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><text x='50%' y='50%' dy='0.35em' text-anchor='middle' fill='rgba(0,0,0,0.05)' font-family='Microsoft YaHei, Arial' font-size='28' transform='rotate(-25 110 110)'>重庆津工电子</text></svg>");
+            background-repeat: repeat;
+            background-size: 220px 220px;
+            background-position: 0 0;
+            transition: all 0.3s ease;
+            animation: containerEntrance 0.8s ease-out;
+        }
+        @keyframes containerEntrance {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .welcome-animation {
+            animation: welcomeFadeIn 1s ease-out;
+        }
+        @keyframes welcomeFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .toc {
+            background: linear-gradient(135deg, rgba(248, 249, 250, 0.9) 0%, rgba(230, 230, 250, 0.7) 100%);
+            padding: 24px;
+            border-radius: 10px;
+            margin: 24px 0;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .toc:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .toc h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .toc ul {
+            padding-left: 20px;
+        }
+        .section {
+            margin: 40px 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 26px;
+        }
+        .section h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 12px;
+            margin-top: 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .section h2:hover {
+            color: #667eea;
+            border-color: #764ba2;
+        }
+        .section h2::before {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+        }
+        .section h2:hover::before {
+            width: 100%;
+        }
+        .section h3 {
+            color: #34495e;
+            margin-top: 25px;
+        }
+        .register-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 18px 0;
+            font-size: 16px;
+        }
+        .register-table th {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+            text-align: left;
+            padding: 16px;
+            border: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+        .register-table td {
+            padding: 14px;
+            border: 1px solid #ddd;
+        }
+        .register-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .register-table tr {
+            transition: all 0.3s ease;
+        }
+        .register-table tr:hover {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            transform: scale(1.01);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            z-index: 1;
+            position: relative;
+        }
+        .register-table tr td:first-child {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+        }
+        .register-table tr td:last-child {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        .example {
+            background-color: #e8f5e8;
+            padding: 18px;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+            margin: 18px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+        }
+        .warning {
+            background-color: #f8d7da;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #dc3545;
+            margin: 15px 0;
+        }
+        .note {
+            background-color: #d1ecf1;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #17a2b8;
+            margin: 15px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .data-type {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .unit {
+            font-style: italic;
+            color: #8e44ad;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 15px 0 5px 0;
+        }
+        .toolbar input[type="text"], .toolbar input[type="search"] {
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        .toolbar button {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+        .toolbar button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .toolbar button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        .toolbar button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .toolbar button:hover::before {
+            opacity: 1;
+        }
+        .toolbar button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        .toolbar button:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .highlight-row {
+            outline: 2px solid #ffc107;
+            background-color: #fff8e1 !important;
+        }
+        .section-toggle {
+            float: right;
+            font-size: 12px;
+            padding: 6px 10px;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .back-to-top {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 99;
+            transition: all 0.3s ease;
+        }
+        .back-to-top:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+        .back-to-top:active {
+            transform: translateY(0) scale(1);
+        }
+        .copy-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 10px;
+            background-color: #28a745;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color .2s ease, transform .1s ease;
+        }
+        .copy-btn:hover { transform: translateY(-1px); }
+        .header, .section, .toc, .footer { animation: fadeIn .4s ease-out both; }
+        .register-table tr { transition: background-color .2s ease, transform .08s ease; }
+        .register-table tr:hover { transform: translateY(-1px); }
+        .toolbar button { transition: background-color .2s ease, transform .1s ease; }
+        .toolbar button:hover { transform: translateY(-1px); }
+        .highlight-row { animation: pulse .9s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); } 100% { box-shadow: 0 0 0 12px rgba(102, 126, 234, 0); } }
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(50, 50);
+                opacity: 0;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+        @media print {
+            body { background: #fff; }
+            .toolbar, .back-to-top { display: none !important; }
+            .container { box-shadow: none; padding: 0; }
+            .section h2 { border-bottom: 1px solid #000; color: #000; }
+            .register-table th { position: static; background-color: #000; color: #fff; }
+        }
+        @media (prefers-color-scheme: dark) {
+            .container { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><text x='50%' y='50%' dy='0.35em' text-anchor='middle' fill='rgba(255,255,255,0.10)' font-family='Microsoft YaHei, Arial' font-size='28' transform='rotate(-25 110 110)'>重庆津工电子</text></svg>"); }
+        }
+        @media print {
+            .container { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><text x='50%' y='50%' dy='0.35em' text-anchor='middle' fill='rgba(0,0,0,0.06)' font-family='Microsoft YaHei, Arial' font-size='26' transform='rotate(-25 130 130)'>重庆津工电子</text></svg>"); background-size: 260px 260px; }
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><text x='50%' y='50%' dy='0.35em' text-anchor='middle' fill='rgba(0,0,0,0.06)' font-family='Microsoft YaHei, Arial' font-size='24' transform='rotate(-30 130 130)'>重庆津工电子</text></svg>");
+            background-repeat: repeat;
+            background-size: 260px 260px;
+            z-index: 0;
+            pointer-events: none;
+        }
+        @media (prefers-color-scheme: dark) {
+            body::before { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><text x='50%' y='50%' dy='0.35em' text-anchor='middle' fill='rgba(255,255,255,0.05)' font-family='Microsoft YaHei, Arial' font-size='24' transform='rotate(-30 130 130)'>重庆津工电子</text></svg>"); }
+        }
+        @media print {
+            body::before { opacity: .12; }
+        }
+        </style>
+</head>
+<body>
+    <div class="background-overlay"></div>
+    <div class="floating-shapes">
+        <div class="shape"></div>
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    <div class="container">
+        <div class="header">
+            <div class="welcome-animation">
+                <h1>Modbus寄存器地址手册（斯络通BMS）</h1>
+                <p>二号板与BMS保护板数据通信规范</p>
+            </div>
+            <div class="version-info">
+                <strong>版本：</strong>v1.0 | <strong>发布日期：</strong>2025年11月22 | <strong>文档编号：</strong>MODBUS-SLT-BMS-001
+            </div>
+            <div class="toolbar" aria-label="工具栏">
+                <input id="global-search" type="search" placeholder="搜索寄存器/描述/单位" aria-label="全局搜索">
+                <input id="addr-jump" type="text" placeholder="输入地址如 0x0019" aria-label="地址跳转">
+                <button id="btn-jump">跳转</button>
+                <button id="btn-expand">展开全部</button>
+                <button id="btn-collapse" class="secondary">收起全部</button>
+            </div>
+        </div>
+        <div class="toc">
+            <h3>目录</h3>
+            <ul>
+                <li><a href="#overview">1. 概述</a></li>
+                <li><a href="#function-codes">2. 功能码支持</a></li>
+                <li><a href="#board-registers">3. 二号板数据寄存器</a></li>
+                <li><a href="#bms-registers">4. BMS保护板数据寄存器</a></li>
+                <li><a href="#data-format">5. 数据格式说明</a></li>
+                <li><a href="#examples">6. 使用示例</a></li>
+                <li><a href="#troubleshooting">7. 故障排除</a></li>
+                <li><a href="#parameters">8. 通信参数</a></li>
+            </ul>
+        </div>
+        <div id="overview" class="section">
+            <h2>1. 概述</h2>
+            <p>本手册详细描述了通过Modbus协议访问二号板和BMS保护板数据的寄存器地址配置。文档为系统集成商和开发人员提供完整的技术参考，确保正确读取和解析设备数据。</p>
+            
+            <div class="highlight">
+                <strong>重要提示：</strong>本手册适用于Modbus RTU和Modbus TCP协议，所有数据均采用大端序(Big-Endian)格式存储。
+            </div>
+
+            <h3>寄存器地址分配</h3>
+            <table class="register-table">
+                <thead>
+                    <tr>
+                        <th>设备类型</th>
+                        <th>地址范围</th>
+                        <th>寄存器数量</th>
+                        <th>数据类型</th>
+                        <th>主要功能</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>二号板</td>
+                        <td>0x0000 - 0x001B</td>
+                        <td>28</td>
+                        <td>保持寄存器/线圈</td>
+                        <td>电源监测、环境监测、安全状态</td>
+                    </tr>
+                    <tr>
+                        <td>BMS保护板</td>
+                        <td>0x0100 - 0x010E</td>
+                        <td>15</td>
+                        <td>保持寄存器</td>
+                        <td>电池管理、充放电控制、状态监测</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        .section h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 12px;
+            margin-top: 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .section h2:hover {
+            color: #667eea;
+            border-color: #764ba2;
+        }
+        .section h2::before {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+        }
+        .section h2:hover::before {
+            width: 100%;
+        }
+        .section h3 {
+            color: #34495e;
+            margin-top: 25px;
+        }
+        .register-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 18px 0;
+            font-size: 16px;
+        }
+        .register-table th {
+            background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+            color: white;
+            text-align: left;
+            padding: 16px;
+            border: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+        .register-table td {
+            padding: 14px;
+            border: 1px solid #ddd;
+        }
+        .register-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .register-table tr {
+            transition: all 0.3s ease;
+        }
+        .register-table tr:hover {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+            transform: scale(1.01);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            z-index: 1;
+            position: relative;
+        }
+        .register-table tr td:first-child {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+        }
+        .register-table tr td:last-child {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        .example {
+            background-color: #e8f5e8;
+            padding: 18px;
+            border-radius: 5px;
+            border-left: 4px solid #28a745;
+            margin: 18px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+        }
+        .warning {
+            background-color: #f8d7da;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #dc3545;
+            margin: 15px 0;
+        }
+        .note {
+            background-color: #d1ecf1;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #17a2b8;
+            margin: 15px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+        .data-type {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .unit {
+            font-style: italic;
+            color: #8e44ad;
+        }
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 15px 0 5px 0;
+        }
+        .toolbar input[type="text"], .toolbar input[type="search"] {
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+        .toolbar button {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+        .toolbar button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .toolbar button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        .toolbar button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .toolbar button:hover::before {
+            opacity: 1;
+        }
+        .toolbar button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        .toolbar button:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+        .toolbar button.secondary {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+        .hidden {
+            display: none !important;
+        }
+        .highlight-row {
+            outline: 2px solid #ffc107;
+            background-color: #fff8e1 !important;
+        }
+        .section-toggle {
+            float: right;
+            font-size: 12px;
+            padding: 6px 10px;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .back-to-top {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 99;
+            transition: all 0.3s ease;
+        }
+        .back-to-top:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+        .back-to-top:active {
+            transform: translateY(0) scale(1);
+        }
+        .copy-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 6px 10px;
+            background-color: #28a745;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color .2s ease, transform .1s ease;
+        }
+        .copy-btn:hover { transform: translateY(-1px); }
+        .header, .section, .toc, .footer { animation: fadeIn .4s ease-out both; }
+        .register-table tr { transition: background-color .2s ease, transform .08s ease; }
+        .register-table tr:hover { transform: translateY(-1px); }
+        .toolbar button { transition: background-color .2s ease, transform .1s ease; }
+        .toolbar button:hover { transform: translateY(-1px); }
+        .highlight-row { animation: pulse .9s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); } 100% { box-shadow: 0 0 0 12px rgba(102, 126, 234, 0); } }
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+            100% { transform: translateY(0) rotate(0deg); }
+        }
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(50, 50);
+                opacity: 0;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+        @media print {
+            body { background: #fff; }
+            .toolbar, .back-to-top { display: none !important; }
+            .container { box-shadow: none; padding: 0; }
+            .section h2 { border-bottom: 1px solid #000; color: #000; }
+            .register-table th { position: static; background-color: #000; color: #fff; }
+        }
+        @media (prefers-color-scheme: dark) {
+            .container { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><text x='50%' y='50%' dy='0.35em' text-anchor='middle' fill='rgba(255,255,255,0.10)' font-family='Microsoft YaHei, Arial' font-size='28' transform='rotate(-25 110 110)'>重庆津工电子</text></svg>"); }
+        }
+        @media print {
+            .container { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><text x='50%' y='50%' dy='0.35em' text-anchor='middle' fill='rgba(0,0,0,0.06)' font-family='Microsoft YaHei, Arial' font-size='26' transform='rotate(-25 130 130)'>重庆津工电子</text></svg>"); background-size: 260px 260px; }
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><text x='50%' y='50%' dy='0.35em' text-anchor='middle' fill='rgba(0,0,0,0.06)' font-family='Microsoft YaHei, Arial' font-size='24' transform='rotate(-30 130 130)'>重庆津工电子</text></svg>");
+            background-repeat: repeat;
+            background-size: 260px 260px;
+            z-index: 0;
+            pointer-events: none;
+        }
+        @media (prefers-color-scheme: dark) {
+            body::before { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><text x='50%' y='50%' dy='0.35em' text-anchor='middle' fill='rgba(255,255,255,0.05)' font-family='Microsoft YaHei, Arial' font-size='24' transform='rotate(-30 130 130)'>重庆津工电子</text></svg>"); }
+        }
+        @media print {
+            body::before { opacity: .12; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Modbus寄存器地址手册（斯络通BMS）</h1>
+            <p>二号板与BMS保护板数据通信规范</p>
+            <div class="version-info">
+                <strong>版本：</strong>v1.0 | <strong>发布日期：</strong>2025年11月22 | <strong>文档编号：</strong>MODBUS-SLT-BMS-001
+            </div>
+            <div class="toolbar" aria-label="工具栏">
+                <input id="global-search" type="search" placeholder="搜索寄存器/描述/单位" aria-label="全局搜索">
+                <input id="addr-jump" type="text" placeholder="输入地址如 0x0019" aria-label="地址跳转">
+                <button id="btn-jump">跳转</button>
+                <button id="btn-expand">展开全部</button>
+                <button id="btn-collapse" class="secondary">收起全部</button>
+            </div>
+        </div>
+
+        <div class="toc">
+            <h3>目录</h3>
+            <ul>
+                <li><a href="#overview">1. 概述</a></li>
+                <li><a href="#function-codes">2. 功能码支持</a></li>
+                <li><a href="#board-registers">3. 二号板数据寄存器</a></li>
+                <li><a href="#bms-registers">4. BMS保护板数据寄存器</a></li>
+                <li><a href="#data-format">5. 数据格式说明</a></li>
+                <li><a href="#examples">6. 使用示例</a></li>
+                <li><a href="#troubleshooting">7. 故障排除</a></li>
+                <li><a href="#parameters">8. 通信参数</a></li>
+            </ul>
+        </div>
+
+        <div id="overview" class="section">
+            <h2>1. 概述</h2>
+            <p>本手册详细描述了通过Modbus协议访问二号板和BMS保护板数据的寄存器地址配置。文档为系统集成商和开发人员提供完整的技术参考，确保正确读取和解析设备数据。</p>
+            
+            <div class="highlight">
+                <strong>重要提示：</strong>本手册适用于Modbus RTU和Modbus TCP协议，所有数据均采用大端序(Big-Endian)格式存储。
+            </div>
+
+            <h3>寄存器地址分配</h3>
+            <table class="register-table">
+                <thead>
+                    <tr>
+                        <th>设备类型</th>
+                        <th>地址范围</th>
+                        <th>寄存器数量</th>
+                        <th>数据类型</th>
+                        <th>主要功能</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>二号板</td>
+                        <td>0x0000 - 0x001B</td>
+                        <td>28</td>
+                        <td>保持寄存器/线圈</td>
+                        <td>电源监测、环境监测、安全状态</td>
+                    </tr>
+                    <tr>
+                        <td>BMS保护板</td>
+                        <td>0x0100 - 0x010E</td>
+                        <td>15</td>
+                        <td>保持寄存器</td>
+                        <td>电池管理、充放电控制、状态监测</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="function-codes" class="section">
+            <h2>2. 功能码支持</h2>
+            <table class="register-table">
+                <thead>
+                    <tr>
+                        <th>功能码</th>
+                        <th>名称</th>
+                        <th>适用范围</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="data-type">0x03</span></td>
+                        <td>读保持寄存器</td>
+                        <td>全部数据寄存器</td>
+                        <td>读取测量值和状态信息</td>
+                    </tr>
+                    <tr>
+                        <td><span class="data-type">0x01</span></td>
+                        <td>读线圈</td>
+                        <td>控制信号</td>
+                        <td>读取开关量状态</td>
+                    </tr>
+                    <tr>
+                        <td><span class="data-type">0x05</span></td>
+                        <td>写单个线圈</td>
+                        <td>控制信号</td>
+                        <td>设置控制信号(如继电器)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="board-registers" class="section">
+            <h2>3. 二号板数据寄存器 (0x0000 - 0x001B)</h2>
+            
+            <h3>3.1 电源监测数据</h3>
+            <table class="register-table">
+                <thead>
+                    <tr>
+                        <th>地址</th>
+                        <th>名称</th>
+                        <th>数据类型</th>
+                        <th>单位</th>
+                        <th>描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x0000</td>
+                        <td>IN1电流</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mA</td>
+                        <td>输入通道1电流值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0001</td>
+                        <td>IN1电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">V×100</span></td>
+                        <td>输入通道1电压值，实际值=寄存器值÷100</td>
+                    </tr>
+                    <tr>
+                        <td>0x0002</td>
+                        <td>IN2电流</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mA</td>
+                        <td>输入通道2电流值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0003</td>
+                        <td>IN2电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">V×100</span></td>
+                        <td>输入通道2电压值，实际值=寄存器值÷100</td>
+                    </tr>
+                    <tr>
+                        <td>0x0004</td>
+                        <td>IN3电流</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mA</td>
+                        <td>输入通道3电流值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0005</td>
+                        <td>IN3电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">V×100</span></td>
+                        <td>输入通道3电压值，实际值=寄存器值÷100</td>
+                    </tr>
+                    <tr>
+                        <td>0x0006</td>
+                        <td>IN4电流</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mA</td>
+                        <td>输入通道4电流值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0007</td>
+                        <td>IN4电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">V×100</span></td>
+                        <td>输入通道4电压值，实际值=寄存器值÷100</td>
+                    </tr>
+                    <tr>
+                        <td>0x0008</td>
+                        <td>IN5电流</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mA</td>
+                        <td>输入通道5电流值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0009</td>
+                        <td>IN5电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">V×100</span></td>
+                        <td>输入通道5电压值，实际值=寄存器值÷100</td>
+                    </tr>
+                    <tr>
+                        <td>0x000A</td>
+                        <td>IN6电流</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mA</td>
+                        <td>输入通道6电流值</td>
+                    </tr>
+                    <tr>
+                        <td>0x000B</td>
+                        <td>IN6电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">V×100</span></td>
+                        <td>输入通道6电压值，实际值=寄存器值÷100</td>
+                    </tr>
+                    <tr>
+                        <td>0x000C</td>
+                        <td>IN7电流</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mA</td>
+                        <td>输入通道7电流值</td>
+                    </tr>
+                    <tr>
+                        <td>0x000D</td>
+                        <td>IN7电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">V×100</span></td>
+                        <td>输入通道7电压值，实际值=寄存器值÷100</td>
+                    </tr>
+                    <tr>
+                        <td>0x000E</td>
+                        <td>IN8电流</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mA</td>
+                        <td>输入通道8电流值</td>
+                    </tr>
+                    <tr>
+                        <td>0x000F</td>
+                        <td>IN8电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">V×100</span></td>
+                        <td>输入通道8电压值，实际值=寄存器值÷100</td>
+                    </tr>
+                    <tr>
+                        <td>0x0010</td>
+                        <td>IN9电流</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mA</td>
+                        <td>输入通道9电流值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0011</td>
+                        <td>IN9电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">V×100</span></td>
+                        <td>输入通道9电压值，实际值=寄存器值÷100</td>
+                    </tr>
+                    <tr>
+                        <td>0x0012</td>
+                        <td>IN10电流</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mA</td>
+                        <td>输入通道10电流值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0013</td>
+                        <td>IN10电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">V×100</span></td>
+                        <td>输入通道10电压值，实际值=寄存器值÷100</td>
+                    </tr>
+                    <tr>
+                        <td>0x0014</td>
+                        <td>AC电流</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>A</td>
+                        <td>交流主路电流值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0015</td>
+                        <td>VBAT输出电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">V×100</span></td>
+                        <td>电池输出电压，实际值=寄存器值÷100</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>3.2 环境监测数据</h3>
+            <table class="register-table">
+                <thead>
+                    <tr>
+                        <th>地址</th>
+                        <th>名称</th>
+                        <th>数据类型</th>
+                        <th>单位</th>
+                        <th>描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x0016</td>
+                        <td>温度符号</td>
+                        <td><span class="data-type">UINT8</span></td>
+                        <td>-</td>
+                        <td>温度符号位 (0=正数, 1=负数)</td>
+                    </tr>
+                    <tr>
+                        <td>0x0017</td>
+                        <td>温度值</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>℃</td>
+                        <td>环境温度绝对值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0018</td>
+                        <td>湿度值</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>%RH</td>
+                        <td>环境湿度值</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>3.3 安全状态</h3>
+            <table class="register-table">
+                <thead>
+                    <tr>
+                        <th>地址</th>
+                        <th>名称</th>
+                        <th>数据类型</th>
+                        <th>状态说明</th>
+                        <th>描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x0019</td>
+                        <td>门状态</td>
+                        <td><span class="data-type">UINT8</span></td>
+                        <td>0=关闭, 1=打开</td>
+                        <td>机柜门状态</td>
+                    </tr>
+                    <tr>
+                        <td>0x001A</td>
+                        <td>水浸状态</td>
+                        <td><span class="data-type">UINT8</span></td>
+                        <td>0=正常, 1=告警</td>
+                        <td>水浸检测状态</td>
+                    </tr>
+                    <tr>
+                        <td>0x001B</td>
+                        <td>AC检测状态</td>
+                        <td><span class="data-type">UINT8</span></td>
+                        <td>0=主电源, 1=备用电源</td>
+                        <td>交流电源检测状态</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="bms-registers" class="section">
+            <h2>4. BMS保护板数据寄存器 (0x0100 - 0x010E)</h2>
+            
+            <h3>4.1 电池单体电压</h3>
+            <table class="register-table">
+                <thead>
+                    <tr>
+                        <th>地址</th>
+                        <th>名称</th>
+                        <th>数据类型</th>
+                        <th>单位</th>
+                        <th>描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x0100</td>
+                        <td>电池1电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mV</td>
+                        <td>电池单体1电压值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0101</td>
+                        <td>电池2电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mV</td>
+                        <td>电池单体2电压值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0102</td>
+                        <td>电池3电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mV</td>
+                        <td>电池单体3电压值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0103</td>
+                        <td>电池4电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mV</td>
+                        <td>电池单体4电压值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0104</td>
+                        <td>电池5电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mV</td>
+                        <td>电池单体5电压值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0105</td>
+                        <td>电池6电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mV</td>
+                        <td>电池单体6电压值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0106</td>
+                        <td>电池7电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mV</td>
+                        <td>电池单体7电压值</td>
+                    </tr>
+                    <tr>
+                        <td>0x0107</td>
+                        <td>电池8电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mV</td>
+                        <td>电池单体8电压值</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>4.2 系统级参数</h3>
+            <table class="register-table">
+                <thead>
+                    <tr>
+                        <th>地址</th>
+                        <th>名称</th>
+                        <th>数据类型</th>
+                        <th>单位</th>
+                        <th>描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x0108</td>
+                        <td>总电压</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td>mV</td>
+                        <td>电池组总电压</td>
+                    </tr>
+                    <tr>
+                        <td>0x0109</td>
+                        <td>电流</td>
+                        <td><span class="data-type">INT16</span></td>
+                        <td><span class="unit">A×100</span></td>
+                        <td>系统电流，实际值=寄存器值÷100 (有符号)</td>
+                    </tr>
+                    <tr>
+                        <td>0x010A</td>
+                        <td>温度1</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">℃×10</span></td>
+                        <td>传感器1温度，实际值=寄存器值÷10</td>
+                    </tr>
+                    <tr>
+                        <td>0x010B</td>
+                        <td>温度2</td>
+                        <td><span class="data-type">UINT16</span></td>
+                        <td><span class="unit">℃×10</span></td>
+                        <td>传感器2温度，实际值=寄存器值÷10</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>4.3 状态与控制</h3>
+            <table class="register-table">
+                <thead>
+                    <tr>
+                        <th>地址</th>
+                        <th>名称</th>
+                        <th>数据类型</th>
+                        <th>状态说明</th>
+                        <th>描述</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x010C</td>
+                        <td>平衡状态</td>
+                        <td><span class="data-type">UINT8</span></td>
+                        <td>0=无平衡, 1=正在平衡</td>
+                        <td>电池均衡状态</td>
+                    </tr>
+                    <tr>
+                        <td>0x010D</td>
+                        <td>充放电状态</td>
+                        <td><span class="data-type">UINT8</span></td>
+                        <td>1=充电, 2=放电, 3=空闲</td>
+                        <td>系统工作状态</td>
+                    </tr>
+                    <tr>
+                        <td>0x010E</td>
+                        <td>电量百分比</td>
+                        <td><span class="data-type">UINT8</span></td>
+                        <td>%</td>
+                        <td>电池剩余电量(0-100%)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="data-format" class="section">
+            <h2>5. 数据格式说明</h2>
+            
+            <h3>5.1 字节顺序</h3>
+            <div class="note">
+                <strong>重要提示：</strong>所有寄存器数据采用大端序(Big-Endian)格式存储。
+                <br>示例：寄存器值 0x1234 表示高位字节为 0x12，低位字节为 0x34。
+            </div>
+
+            <h3>5.2 特殊数据类型处理</h3>
+            <ul>
+                <li><strong>带符号整数(INT16)：</strong>
+                    <ul>
+                        <li>最高位(MSB)为符号位</li>
+                        <li>负数范围：0x8000 到 0xFFFF</li>
+                        <li>转换公式：若值≥32768，则实际值 = 值 - 65536</li>
+                    </ul>
+                </li>
+                <li><strong>缩放因子处理：</strong>
+                    <ul>
+                        <li>电压(×100)：寄存器值500表示5.00V</li>
+                        <li>电流(×100)：寄存器值-100表示-1.00A</li>
+                        <li>温度(×10)：寄存器值250表示25.0℃</li>
+                    </ul>
+                </li>
+                <li><strong>温度符号位：</strong>
+                    <ul>
+                        <li>地址0x0016的值决定0x0017温度值的符号</li>
+                        <li>温度计算：若符号=0，温度=值；若符号=1，温度= -值</li>
+                    </ul>
+                </li>
+            </ul>
+
+            <h3>5.3 数据有效性验证</h3>
+            <div class="warning">
+                <strong>注意：</strong>
+                <ul>
+                    <li>读取到的异常值(如电压>60V)可能表示传感器故障</li>
+                    <li>电流值突然跳变可能表示测量异常</li>
+                    <li>温度异常范围(-40℃~125℃)外的值应视为无效</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="examples" class="section">
+            <h2>6. 使用示例</h2>
+            
+            <h3>6.1 读取IN1通道电流和电压</h3>
+            <div class="example">
+                请求：[设备ID] 03 00 00 00 02 [CRC]<br>
+                响应：[设备ID] 03 04 00 64 01 F4 [CRC]<br><br>
+                解析：<br>
+                - IN1电流：0x0064 = 100 mA<br>
+                - IN1电压：0x01F4 = 500 → 500÷100 = 5.00 V
+            </div>
+
+            <h3>6.2 读取BMS电池单体电压</h3>
+            <div class="example">
+                请求：[设备ID] 03 01 00 00 02 [CRC]<br>
+                响应：[设备ID] 03 04 0F A0 0F D2 [CRC]<br><br>
+                解析：<br>
+                - 电池1电压：0x0FA0 = 4000 mV = 4.000 V<br>
+                - 电池2电压：0x0FD2 = 4050 mV = 4.050 V
+            </div>
+
+            <h3>6.3 读取带符号电流值</h3>
+            <div class="example">
+                请求：[设备ID] 03 01 09 00 01 [CRC]<br>
+                响应：[设备ID] 03 02 FF 9C [CRC]<br><br>
+                解析：<br>
+                - 寄存器值：0xFF9C = 65436 (无符号)<br>
+                - 有符号转换：65436 - 65536 = -100<br>
+                - 实际电流：-100÷100 = -1.00 A (放电状态)
+            </div>
+
+            <h3>6.4 读取环境温度</h3>
+            <div class="example">
+                请求：[设备ID] 03 00 16 00 02 [CRC]<br>
+                响应：[设备ID] 03 04 00 00 00 19 [CRC]<br><br>
+                解析：<br>
+                - 温度符号：0x00 = 正数<br>
+                - 温度值：0x0019 = 25<br>
+                - 实际温度：+25 ℃
+            </div>
+
+            <h3>6.5 批量读取关键状态</h3>
+            <div class="example">
+                请求：[设备ID] 03 00 19 00 03 [CRC]  # 读取门状态、水浸状态、AC状态<br>
+                响应：[设备ID] 03 06 00 01 00 00 00 00 [CRC]<br><br>
+                解析：<br>
+                - 门状态：0x0001 = 1 (打开)<br>
+                - 水浸状态：0x0000 = 0 (无水)<br>
+                - AC检测状态：0x0000 = 0 (主电源)
+            </div>
+        </div>
+
+        <div id="troubleshooting" class="section">
+            <h2>7. 故障排除</h2>
+            
+            <h3>7.1 常见错误代码</h3>
+            <table class="register-table">
+                <thead>
+                    <tr>
+                        <th>异常码</th>
+                        <th>说明</th>
+                        <th>处理建议</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>0x83 01</td>
+                        <td>非法功能码</td>
+                        <td>检查功能码是否支持</td>
+                    </tr>
+                    <tr>
+                        <td>0x83 02</td>
+                        <td>非法数据地址</td>
+                        <td>检查寄存器地址是否在有效范围</td>
+                    </tr>
+                    <tr>
+                        <td>0x83 03</td>
+                        <td>非法数据值</td>
+                        <td>检查请求寄存器数量是否有效</td>
+                    </tr>
+                    <tr>
+                        <td>0x83 04</td>
+                        <td>从站设备故障</td>
+                        <td>重启设备或检查硬件连接</td>
+                    </tr>
+                    <tr>
+                        <td>0x83 08</td>
+                        <td>存储奇偶性差错</td>
+                        <td>联系技术支持</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>7.2 通信问题排查</h3>
+            <ul>
+                <li><strong>无法建立连接：</strong>检查物理连接、波特率设置、设备地址</li>
+                <li><strong>数据错误：</strong>检查校验位设置、线缆质量、通信距离</li>
+                <li><strong>响应超时：</strong>增加超时时间、检查设备响应能力</li>
+                <li><strong>数据不一致：</strong>检查字节顺序、数据类型转换</li>
+            </ul>
+        </div>
+
+        <div id="parameters" class="section">
+            <h2>8. 通信参数</h2>
+            
+            <table class="register-table">
+                <thead>
+                    <tr>
+                        <th>参数</th>
+                        <th>建议值</th>
+                        <th>说明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>波特率</td>
+                        <td>115200</td>
+                        <td>固定值</td>
+                    </tr>
+                    <tr>
+                        <td>数据位</td>
+                        <td>8</td>
+                        <td>固定值</td>
+                    </tr>
+                    <tr>
+                        <td>停止位</td>
+                        <td>1</td>
+                        <td>固定值</td>
+                    </tr>
+                    <tr>
+                        <td>校验位</td>
+                        <td>无/偶校验</td>
+                        <td>根据设备配置选择</td>
+                    </tr>
+                    <tr>
+                        <td>超时时间</td>
+                        <td>1000ms</td>
+                        <td>建议值，可根据网络状况调整</td>
+                    </tr>
+                    <tr>
+                        <td>重试次数</td>
+                        <td>3次</td>
+                        <td>通信失败时的重试次数</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>8.1 读取频率建议</h3>
+            <ul>
+                <li><strong>电源监测数据：</strong>1-5秒/次</li>
+                <li><strong>环境监测数据：</strong>5-10秒/次</li>
+                <li><strong>电池数据：</strong>2-5秒/次</li>
+                <li><strong>状态信号：</strong>1-2秒/次</li>
+            </ul>
+
+            <h3>8.2 批量读取优化</h3>
+            <ul>
+                <li>尽量使用单次请求读取连续寄存器</li>
+                <li>避免跨设备类型读取(如同时读0x001B和0x0100)</li>
+                <li>最大读取寄存器数建议不超过125个(受Modbus协议限制)</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 重庆津工电子. 保留所有权利.</p>
+            <p>文档版本：v1.0 | 最后更新：2025年11月22日</p>
+        </div>
+    </div>
+    <div id="backToTop" class="back-to-top" title="回到顶部" aria-label="回到顶部" style="display:none">↑</div>
+    <script>
+    const q = document.getElementById('global-search');
+    const addr = document.getElementById('addr-jump');
+    const btnJump = document.getElementById('btn-jump');
+    const btnExpand = document.getElementById('btn-expand');
+    const btnCollapse = document.getElementById('btn-collapse');
+    const sections = Array.from(document.querySelectorAll('.section'));
+    function normalize(s){return s.toLowerCase();}
+    function filter(){
+        const val = normalize(q.value.trim());
+        const tables = Array.from(document.querySelectorAll('.register-table'));
+        tables.forEach(t=>{
+            let visible = 0;
+            Array.from(t.querySelectorAll('tbody tr')).forEach(tr=>{
+                const text = normalize(tr.innerText);
+                const show = !val || text.includes(val);
+                tr.classList.toggle('hidden', !show);
+                if(show) visible++;
+            });
+            t.classList.toggle('hidden', visible===0);
+        });
+    }
+    q.addEventListener('input', filter);
+    function clearHighlights(){
+        Array.from(document.querySelectorAll('.highlight-row')).forEach(r=>r.classList.remove('highlight-row'));
+    }
+    function jump(){
+        const v = addr.value.trim();
+        if(!v) return;
+        clearHighlights();
+        const target = Array.from(document.querySelectorAll('.register-table tbody tr')).find(tr=>{
+            const cell = tr.querySelector('td');
+            return cell && cell.innerText.trim().toLowerCase() === v.toLowerCase();
+        });
+        if(target){
+            target.classList.add('highlight-row');
+            target.scrollIntoView({behavior:'smooth', block:'center'});
+        }
+    }
+    btnJump.addEventListener('click', jump);
+    addr.addEventListener('keydown', e=>{ if(e.key==='Enter') jump(); });
+    sections.forEach(sec=>{
+        const h2 = sec.querySelector('h2');
+        if(h2){
+            const btn = document.createElement('button');
+            btn.className = 'section-toggle';
+            btn.textContent = '收起';
+            btn.addEventListener('click', ()=>{
+                const content = Array.from(sec.children).filter(c=>c!==h2);
+                const isHidden = content.every(c=>c.classList.contains('hidden'));
+                if(isHidden){
+                    content.forEach(c=>c.classList.remove('hidden'));
+                    btn.textContent = '收起';
+                } else {
+                    content.forEach(c=>c.classList.add('hidden'));
+                    btn.textContent = '展开';
+                }
+            });
+            h2.appendChild(btn);
+        }
+    });
+    btnExpand.addEventListener('click', ()=>{
+        sections.forEach(sec=>{
+            Array.from(sec.children).forEach((c,i)=>{ if(i>0) c.classList.remove('hidden'); });
+            const t = sec.querySelector('.section-toggle');
+            if(t) t.textContent = '收起';
+        });
+    });
+    btnCollapse.addEventListener('click', ()=>{
+        sections.forEach(sec=>{
+            Array.from(sec.children).forEach((c,i)=>{ if(i>0) c.classList.add('hidden'); });
+            const t = sec.querySelector('.section-toggle');
+            if(t) t.textContent = '展开';
+        });
+    });
+    const back = document.getElementById('backToTop');
+    window.addEventListener('scroll', ()=>{
+        back.style.display = window.scrollY > 400 ? 'flex' : 'none';
+    });
+    back.addEventListener('click', ()=>{ window.scrollTo({top:0, behavior:'smooth'}); });
+    Array.from(document.querySelectorAll('.example')).forEach(ex=>{
+        const btn = document.createElement('div');
+        btn.className = 'copy-btn';
+        btn.textContent = '复制示例';
+        ex.appendChild(btn);
+        btn.addEventListener('click', ()=>{
+            const text = ex.innerText.trim();
+            const copyFallback = ()=>{
+                const ta = document.createElement('textarea');
+                ta.value = text; document.body.appendChild(ta);
+                ta.select(); try { document.execCommand('copy'); } catch(e) {}
+                document.body.removeChild(ta);
+                btn.textContent = '已复制';
+                setTimeout(()=>{ btn.textContent = '复制示例'; }, 1500);
+            };
+            if(navigator.clipboard && navigator.clipboard.writeText){
+                navigator.clipboard.writeText(text).then(()=>{
+                    btn.textContent = '已复制';
+                    setTimeout(()=>{ btn.textContent = '复制示例'; }, 1500);
+                }).catch(copyFallback);
+            } else {
+                copyFallback();
+            }
+        });
+    });
+    </script>
+    </body>
+    </html>

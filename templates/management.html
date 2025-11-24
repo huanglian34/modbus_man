@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据记录管理 - Modbus数据监控面板</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/message.css') }}">
+    <!-- 引入Chart.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>数据记录管理</h1>
+            <div class="header-info">
+                <div class="welcome-message">
+                    <span id="welcomeText"></span>
+                </div>
+                <div class="beijing-time">
+                    <span>北京时间: </span>
+                    <span id="beijingTime"></span>
+                </div>
+            </div>
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-indicator" id="statusIndicator"></span>
+                <span class="status-text" id="statusText">未连接</span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- 返回主页按钮 -->
+            <div class="panel">
+                <div class="button-group">
+                    <button id="backToMainBtn" class="btn-primary">返回主页</button>
+                </div>
+            </div>
+
+            <!-- 记录会话列表 -->
+            <div class="panel">
+                <h2>记录会话列表</h2>
+                <div class="button-group">
+                    <button id="refreshRecordingsBtn" class="btn-secondary">刷新列表</button>
+                </div>
+                <div id="recordingsList" class="recordings-list">
+                    <!-- 记录会话将在这里显示 -->
+                </div>
+            </div>
+
+            <!-- 图表显示区域 -->
+            <div class="panel chart-panel">
+                <h2>数据趋势图</h2>
+                <div class="chart-container">
+                    <canvas id="dataChart"></canvas>
+                </div>
+                <div class="chart-controls">
+                    <select id="chartDataType">
+                        <option value="in1_current">IN1电流</option>
+                        <option value="in1_voltage">IN1电压</option>
+                        <option value="in2_current">IN2电流</option>
+                        <option value="in2_voltage">IN2电压</option>
+                        <option value="in3_current">IN3电流</option>
+                        <option value="in3_voltage">IN3电压</option>
+                        <option value="in4_current">IN4电流</option>
+                        <option value="in4_voltage">IN4电压</option>
+                        <option value="in5_current">IN5电流</option>
+                        <option value="in5_voltage">IN5电压</option>
+                        <option value="in6_current">IN6电流</option>
+                        <option value="in6_voltage">IN6电压</option>
+                        <option value="in7_current">IN7电流</option>
+                        <option value="in7_voltage">IN7电压</option>
+                        <option value="in8_current">IN8电流</option>
+                        <option value="in8_voltage">IN8电压</option>
+                        <option value="in9_current">IN9电流</option>
+                        <option value="in9_voltage">IN9电压</option>
+                        <option value="in10_current">IN10电流</option>
+                        <option value="in10_voltage">IN10电压</option>
+                        <option value="ac_current">AC电流</option>
+                        <option value="vbat_voltage">VBAT电压</option>
+                        <option value="battery1_voltage">电池1电压</option>
+                        <option value="battery2_voltage">电池2电压</option>
+                        <option value="battery3_voltage">电池3电压</option>
+                        <option value="battery4_voltage">电池4电压</option>
+                        <option value="battery5_voltage">电池5电压</option>
+                        <option value="battery6_voltage">电池6电压</option>
+                        <option value="battery7_voltage">电池7电压</option>
+                        <option value="battery8_voltage">电池8电压</option>
+                        <option value="total_voltage">总电压</option>
+                        <option value="current">电流</option>
+                        <option value="temperature1">温度1</option>
+                        <option value="temperature2">温度2</option>
+                        <option value="temperature">环境温度</option>
+                        <option value="humidity">湿度</option>
+                    </select>
+                    <button id="clearChartBtn" class="btn-secondary">清除图表</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM元素引用
+        const elements = {
+            backToMainBtn: document.getElementById('backToMainBtn'),
+            refreshRecordingsBtn: document.getElementById('refreshRecordingsBtn'),
+            recordingsList: document.getElementById('recordingsList'),
+            chartDataType: document.getElementById('chartDataType'),
+            clearChartBtn: document.getElementById('clearChartBtn'),
+            beijingTime: document.getElementById('beijingTime'),
+            welcomeText: document.getElementById('welcomeText'),
+            connectionStatus: document.getElementById('connectionStatus'),
+            statusIndicator: document.getElementById('statusIndicator'),
+            statusText: document.getElementById('statusText')
+        };
+
+        // 全局变量
+        let dataChart = null;
+        let currentRecordingData = null;
+
+        // 初始化应用
+        function initApp() {
+            setupEventListeners();
+            updateWelcomeMessage();
+            startBeijingTime();
+            loadRecordings();
+            initChart();
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            elements.backToMainBtn.addEventListener('click', () => {
+                window.location.href = '/';
+            });
+            elements.refreshRecordingsBtn.addEventListener('click', loadRecordings);
+            elements.chartDataType.addEventListener('change', updateChart);
+            elements.clearChartBtn.addEventListener('click', clearChart);
+        }
+
+        // 更新欢迎标语
+        function updateWelcomeMessage() {
+            const now = new Date();
+            const hour = now.getHours();
+            
+            let greeting = '';
+            if (hour >= 6 && hour < 12) {
+                greeting = '早上好';
+            } else if (hour >= 12 && hour < 14) {
+                greeting = '中午好';
+            } else if (hour >= 14 && hour < 18) {
+                greeting = '下午好';
+            } else if (hour >= 18 && hour < 22) {
+                greeting = '晚上好';
+            } else {
+                greeting = '夜深了';
+            }
+            
+            const messages = [
+                `${greeting}，欢迎使用数据记录管理面板！`,
+                `${greeting}，祝您工作愉快！`,
+                `${greeting}，数据管理一切就绪！`,
+                `${greeting}，系统运行正常！`
+            ];
+            
+            // 随机选择一条欢迎信息
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            elements.welcomeText.textContent = randomMessage;
+        }
+
+        // 启动北京时间显示
+        function startBeijingTime() {
+            updateBeijingTime();
+            setInterval(updateBeijingTime, 1000);
+        }
+
+        // 更新北京时间显示
+        function updateBeijingTime() {
+            // 创建北京时间（UTC+8）
+            const now = new Date();
+            const beijingTime = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + (8 * 3600000));
+            
+            // 格式化时间显示
+            const year = beijingTime.getFullYear();
+            const month = String(beijingTime.getMonth() + 1).padStart(2, '0');
+            const day = String(beijingTime.getDate()).padStart(2, '0');
+            const hours = String(beijingTime.getHours()).padStart(2, '0');
+            const minutes = String(beijingTime.getMinutes()).padStart(2, '0');
+            const seconds = String(beijingTime.getSeconds()).padStart(2, '0');
+            
+            const timeString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+            elements.beijingTime.textContent = timeString;
+        }
+
+        // 加载记录会话列表
+        async function loadRecordings() {
+            try {
+                const response = await fetch('/api/recordings');
+                const recordings = await response.json();
+                
+                if (recordings.length === 0) {
+                    elements.recordingsList.innerHTML = '<p>暂无记录会话</p>';
+                    return;
+                }
+                
+                // 清空现有内容
+                elements.recordingsList.innerHTML = '';
+                
+                // 创建记录会话列表
+                recordings.forEach(recording => {
+                    const recordingElement = document.createElement('div');
+                    recordingElement.className = 'recording-item';
+                    recordingElement.innerHTML = `
+                        <div class="recording-info">
+                            <h3>${recording.name}</h3>
+                            <p>开始时间: ${formatDateTime(recording.start_time)}</p>
+                            <p>结束时间: ${recording.end_time ? formatDateTime(recording.end_time) : '进行中'}</p>
+                        </div>
+                        <div class="recording-actions">
+                            <button class="btn-primary view-btn" data-id="${recording.id}">查看</button>
+                            <button class="btn-secondary delete-btn" data-id="${recording.id}">删除</button>
+                        </div>
+                    `;
+                    elements.recordingsList.appendChild(recordingElement);
+                });
+                
+                // 添加事件监听器
+                document.querySelectorAll('.view-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const recordingId = e.target.getAttribute('data-id');
+                        viewRecording(recordingId);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const recordingId = e.target.getAttribute('data-id');
+                        deleteRecording(recordingId);
+                    });
+                });
+            } catch (error) {
+                console.error('加载记录会话失败:', error);
+                showMessage('加载记录会话失败', 'error');
+            }
+        }
+
+        // 格式化日期时间
+        function formatDateTime(dateTimeString) {
+            if (!dateTimeString) return '未知';
+            const date = new Date(dateTimeString);
+            return date.toLocaleString('zh-CN');
+        }
+
+        // 查看记录
+        async function viewRecording(recordingId) {
+            try {
+                const response = await fetch(`/api/recording/${recordingId}`);
+                const data = await response.json();
+                
+                // 检查是否有错误信息
+                if (data.error) {
+                    showMessage('查看记录失败: ' + data.error, 'error');
+                    return;
+                }
+                
+                if (data.length === 0) {
+                    showMessage('该记录会话无数据', 'warning');
+                    return;
+                }
+                
+                currentRecordingData = data;
+                updateChart();
+                showMessage('数据加载成功', 'success');
+            } catch (error) {
+                console.error('查看记录失败:', error);
+                showMessage('查看记录失败: ' + error.message, 'error');
+            }
+        }
+
+        // 删除记录
+        async function deleteRecording(recordingId) {
+            if (!confirm('确定要删除这个记录会话吗？此操作不可恢复。')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/delete-recording/${recordingId}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('记录删除成功', 'success');
+                    loadRecordings();
+                    
+                    // 如果当前显示的是被删除的记录，清除图表
+                    if (currentRecordingData) {
+                        currentRecordingData = null;
+                        clearChart();
+                    }
+                } else {
+                    showMessage('删除记录失败', 'error');
+                }
+            } catch (error) {
+                console.error('删除记录失败:', error);
+                showMessage('删除记录失败', 'error');
+            }
+        }
+
+        // 初始化图表
+        function initChart() {
+            const ctx = document.getElementById('dataChart').getContext('2d');
+            dataChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '数据值',
+                        data: [],
+                        borderColor: 'rgb(54, 162, 235)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: '时间'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: '数值'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        // 更新图表显示
+        function updateChart() {
+            if (!dataChart || !currentRecordingData) return;
+            
+            const selectedType = elements.chartDataType.value;
+            let label = '';
+            let dataKey = '';
+            
+            // 根据选择的数据类型获取对应值
+            switch (selectedType) {
+                case 'in1_current':
+                    label = 'IN1电流 (mA)';
+                    dataKey = 'in1_current';
+                    break;
+                case 'in1_voltage':
+                    label = 'IN1电压 (V)';
+                    dataKey = 'in1_voltage';
+                    break;
+                case 'in2_current':
+                    label = 'IN2电流 (mA)';
+                    dataKey = 'in2_current';
+                    break;
+                case 'in2_voltage':
+                    label = 'IN2电压 (V)';
+                    dataKey = 'in2_voltage';
+                    break;
+                case 'in3_current':
+                    label = 'IN3电流 (mA)';
+                    dataKey = 'in3_current';
+                    break;
+                case 'in3_voltage':
+                    label = 'IN3电压 (V)';
+                    dataKey = 'in3_voltage';
+                    break;
+                case 'in4_current':
+                    label = 'IN4电流 (mA)';
+                    dataKey = 'in4_current';
+                    break;
+                case 'in4_voltage':
+                    label = 'IN4电压 (V)';
+                    dataKey = 'in4_voltage';
+                    break;
+                case 'in5_current':
+                    label = 'IN5电流 (mA)';
+                    dataKey = 'in5_current';
+                    break;
+                case 'in5_voltage':
+                    label = 'IN5电压 (V)';
+                    dataKey = 'in5_voltage';
+                    break;
+                case 'in6_current':
+                    label = 'IN6电流 (mA)';
+                    dataKey = 'in6_current';
+                    break;
+                case 'in6_voltage':
+                    label = 'IN6电压 (V)';
+                    dataKey = 'in6_voltage';
+                    break;
+                case 'in7_current':
+                    label = 'IN7电流 (mA)';
+                    dataKey = 'in7_current';
+                    break;
+                case 'in7_voltage':
+                    label = 'IN7电压 (V)';
+                    dataKey = 'in7_voltage';
+                    break;
+                case 'in8_current':
+                    label = 'IN8电流 (mA)';
+                    dataKey = 'in8_current';
+                    break;
+                case 'in8_voltage':
+                    label = 'IN8电压 (V)';
+                    dataKey = 'in8_voltage';
+                    break;
+                case 'in9_current':
+                    label = 'IN9电流 (mA)';
+                    dataKey = 'in9_current';
+                    break;
+                case 'in9_voltage':
+                    label = 'IN9电压 (V)';
+                    dataKey = 'in9_voltage';
+                    break;
+                case 'in10_current':
+                    label = 'IN10电流 (mA)';
+                    dataKey = 'in10_current';
+                    break;
+                case 'in10_voltage':
+                    label = 'IN10电压 (V)';
+                    dataKey = 'in10_voltage';
+                    break;
+                case 'ac_current':
+                    label = 'AC电流 (A)';
+                    dataKey = 'ac_current';
+                    break;
+                case 'vbat_voltage':
+                    label = 'VBAT电压 (V)';
+                    dataKey = 'vbat_voltage';
+                    break;
+                case 'battery1_voltage':
+                    label = '电池1电压 (V)';
+                    dataKey = 'battery1_voltage';
+                    break;
+                case 'battery2_voltage':
+                    label = '电池2电压 (V)';
+                    dataKey = 'battery2_voltage';
+                    break;
+                case 'battery3_voltage':
+                    label = '电池3电压 (V)';
+                    dataKey = 'battery3_voltage';
+                    break;
+                case 'battery4_voltage':
+                    label = '电池4电压 (V)';
+                    dataKey = 'battery4_voltage';
+                    break;
+                case 'battery5_voltage':
+                    label = '电池5电压 (V)';
+                    dataKey = 'battery5_voltage';
+                    break;
+                case 'battery6_voltage':
+                    label = '电池6电压 (V)';
+                    dataKey = 'battery6_voltage';
+                    break;
+                case 'battery7_voltage':
+                    label = '电池7电压 (V)';
+                    dataKey = 'battery7_voltage';
+                    break;
+                case 'battery8_voltage':
+                    label = '电池8电压 (V)';
+                    dataKey = 'battery8_voltage';
+                    break;
+                case 'total_voltage':
+                    label = '总电压 (V)';
+                    dataKey = 'total_voltage';
+                    break;
+                case 'current':
+                    label = '电流 (A)';
+                    dataKey = 'current';
+                    break;
+                case 'temperature1':
+                    label = '温度1 (℃)';
+                    dataKey = 'temperature1';
+                    break;
+                case 'temperature2':
+                    label = '温度2 (℃)';
+                    dataKey = 'temperature2';
+                    break;
+                case 'temperature':
+                    label = '环境温度 (℃)';
+                    dataKey = 'temperature';
+                    break;
+                case 'humidity':
+                    label = '湿度 (%RH)';
+                    dataKey = 'humidity';
+                    break;
+            }
+            
+            // 提取数据
+            const labels = currentRecordingData.map(record => {
+                const date = new Date(record.timestamp);
+                return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
+            });
+            
+            const values = currentRecordingData.map(record => record[dataKey]);
+            
+            // 更新图表
+            dataChart.data.datasets[0].label = label;
+            dataChart.data.labels = labels;
+            dataChart.data.datasets[0].data = values;
+            dataChart.update();
+        }
+
+        // 清除图表
+        function clearChart() {
+            if (!dataChart) return;
+            
+            dataChart.data.labels = [];
+            dataChart.data.datasets[0].data = [];
+            dataChart.update();
+            showMessage('图表已清除', 'success');
+        }
+
+        // 显示消息
+        function showMessage(message, type) {
+            // 创建消息元素
+            const messageEl = document.createElement('div');
+            messageEl.className = `message message-${type}`;
+            messageEl.textContent = message;
+            
+            // 添加到页面
+            document.body.appendChild(messageEl);
+            
+            // 3秒后移除
+            setTimeout(() => {
+                if (messageEl.parentNode) {
+                    messageEl.parentNode.removeChild(messageEl);
+                }
+            }, 3000);
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>

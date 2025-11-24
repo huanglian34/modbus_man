@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modbus数据监控面板</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/message.css') }}">
+    <!-- 引入Chart.js库 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Modbus数据监控面板</h1>
+            <div class="header-info">
+                <div class="welcome-message">
+                    <span id="welcomeText"></span>
+                </div>
+                <div class="beijing-time">
+                    <span>北京时间: </span>
+                    <span id="beijingTime"></span>
+                </div>
+            </div>
+            <div class="connection-status" id="connectionStatus">
+                <span class="status-indicator" id="statusIndicator"></span>
+                <span class="status-text" id="statusText">未连接</span>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <!-- 配置面板 -->
+            <div class="panel config-panel">
+                <h2>连接配置</h2>
+                <div class="form-group">
+                    <label for="serverIp">服务器IP:</label>
+                    <input type="text" id="serverIp" value="127.0.0.1">
+                </div>
+                <div class="form-group">
+                    <label for="serverPort">端口:</label>
+                    <input type="number" id="serverPort" value="502">
+                </div>
+                <div class="button-group">
+                    <button id="connectBtn" class="btn-primary">连接</button>
+                    <button id="disconnectBtn" class="btn-secondary" disabled>断开</button>
+                </div>
+            </div>
+
+            <!-- 控制面板 -->
+            <div class="panel control-panel">
+                <h2>控制面板</h2>
+                <div class="button-group">
+                    <button id="refreshBtn" class="btn-primary">手动刷新</button>
+                    <button id="autoRefreshBtn" class="btn-secondary">开始自动刷新</button>
+                </div>
+                <div class="form-group">
+                    <label for="refreshInterval">刷新间隔(秒):</label>
+                    <input type="number" id="refreshInterval" value="5" min="1" max="60">
+                </div>
+                
+                <!-- 数据记录控制 -->
+                <div class="recording-controls">
+                    <h3>数据记录</h3>
+                    <div class="form-group">
+                        <label for="recordingName">记录名称:</label>
+                        <input type="text" id="recordingName" placeholder="输入记录名称">
+                    </div>
+                    <div class="button-group">
+                        <button id="startRecordingBtn" class="btn-primary" disabled>开始记录</button>
+                        <button id="stopRecordingBtn" class="btn-secondary" disabled>停止记录</button>
+                        <button id="managementBtn" class="btn-secondary">管理记录</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据区域 -->
+            <div class="data-section">
+                <!-- 二号板数据 -->
+                <div class="panel">
+                    <h2>二号板数据</h2>
+                    <div class="data-container">
+                        <!-- 电源监测 - IN1到IN4 -->
+                        <div class="data-card">
+                            <h3>电源监测 (IN1-IN4)</h3>
+                            <div class="data-items">
+                                <div class="data-item">
+                                    <span class="label">IN1 电流:</span>
+                                    <span class="value" id="in1Current">--</span>
+                                    <span class="unit">mA</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN1 电压:</span>
+                                    <span class="value" id="in1Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN2 电流:</span>
+                                    <span class="value" id="in2Current">--</span>
+                                    <span class="unit">mA</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN2 电压:</span>
+                                    <span class="value" id="in2Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN3 电流:</span>
+                                    <span class="value" id="in3Current">--</span>
+                                    <span class="unit">mA</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN3 电压:</span>
+                                    <span class="value" id="in3Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN4 电流:</span>
+                                    <span class="value" id="in4Current">--</span>
+                                    <span class="unit">mA</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN4 电压:</span>
+                                    <span class="value" id="in4Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 电源监测 - IN5到IN8 -->
+                        <div class="data-card">
+                            <h3>电源监测 (IN5-IN8)</h3>
+                            <div class="data-items">
+                                <div class="data-item">
+                                    <span class="label">IN5 电流:</span>
+                                    <span class="value" id="in5Current">--</span>
+                                    <span class="unit">mA</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN5 电压:</span>
+                                    <span class="value" id="in5Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN6 电流:</span>
+                                    <span class="value" id="in6Current">--</span>
+                                    <span class="unit">mA</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN6 电压:</span>
+                                    <span class="value" id="in6Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN7 电流:</span>
+                                    <span class="value" id="in7Current">--</span>
+                                    <span class="unit">mA</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN7 电压:</span>
+                                    <span class="value" id="in7Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN8 电流:</span>
+                                    <span class="value" id="in8Current">--</span>
+                                    <span class="unit">mA</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN8 电压:</span>
+                                    <span class="value" id="in8Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 电源监测 - IN9到AC -->
+                        <div class="data-card">
+                            <h3>电源监测 (IN9-AC)</h3>
+                            <div class="data-items">
+                                <div class="data-item">
+                                    <span class="label">IN9 电流:</span>
+                                    <span class="value" id="in9Current">--</span>
+                                    <span class="unit">mA</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN9 电压:</span>
+                                    <span class="value" id="in9Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN10 电流:</span>
+                                    <span class="value" id="in10Current">--</span>
+                                    <span class="unit">mA</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">IN10 电压:</span>
+                                    <span class="value" id="in10Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">AC 电流:</span>
+                                    <span class="value" id="acCurrent">--</span>
+                                    <span class="unit">A</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">VBAT 输出电压:</span>
+                                    <span class="value" id="vbatVoltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 环境监测 -->
+                        <div class="data-card">
+                            <h3>环境监测</h3>
+                            <div class="data-items">
+                                <div class="data-item">
+                                    <span class="label">温度:</span>
+                                    <span class="value" id="temperature">--</span>
+                                    <span class="unit">℃</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">湿度:</span>
+                                    <span class="value" id="humidity">--</span>
+                                    <span class="unit">%RH</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 安全状态 -->
+                        <div class="data-card">
+                            <h3>安全状态</h3>
+                            <div class="data-items">
+                                <div class="data-item">
+                                    <span class="label">门状态:</span>
+                                    <span class="value" id="doorStatus">--</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">水浸状态:</span>
+                                    <span class="value" id="waterStatus">--</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">AC检测状态:</span>
+                                    <span class="value" id="acStatus">--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BMS保护板数据 -->
+                <div class="panel" style="margin-top: 20px;">
+                    <h2>BMS保护板数据</h2>
+                    <div class="data-container">
+                        <!-- 电池电压 - 1到4 -->
+                        <div class="data-card">
+                            <h3>电池电压 (1-4)</h3>
+                            <div class="data-items">
+                                <div class="data-item">
+                                    <span class="label">电池1:</span>
+                                    <span class="value" id="battery1Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">电池2:</span>
+                                    <span class="value" id="battery2Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">电池3:</span>
+                                    <span class="value" id="battery3Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">电池4:</span>
+                                    <span class="value" id="battery4Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 电池电压 - 5到8 -->
+                        <div class="data-card">
+                            <h3>电池电压 (5-8)</h3>
+                            <div class="data-items">
+                                <div class="data-item">
+                                    <span class="label">电池5:</span>
+                                    <span class="value" id="battery5Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">电池6:</span>
+                                    <span class="value" id="battery6Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">电池7:</span>
+                                    <span class="value" id="battery7Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">电池8:</span>
+                                    <span class="value" id="battery8Voltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 系统参数 -->
+                        <div class="data-card">
+                            <h3>系统参数</h3>
+                            <div class="data-items">
+                                <div class="data-item">
+                                    <span class="label">总电压:</span>
+                                    <span class="value" id="totalVoltage">--</span>
+                                    <span class="unit">V</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">电流:</span>
+                                    <span class="value" id="current">--</span>
+                                    <span class="unit">A</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">温度1:</span>
+                                    <span class="value" id="temperature1">--</span>
+                                    <span class="unit">℃</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">温度2:</span>
+                                    <span class="value" id="temperature2">--</span>
+                                    <span class="unit">℃</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 状态信息 -->
+                        <div class="data-card">
+                            <h3>状态信息</h3>
+                            <div class="data-items">
+                                <div class="data-item">
+                                    <span class="label">平衡状态:</span>
+                                    <span class="value" id="balanceStatus">--</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">充放电状态:</span>
+                                    <span class="value" id="chargeDischargeStatus">--</span>
+                                </div>
+                                <div class="data-item">
+                                    <span class="label">电量:</span>
+                                    <span class="value" id="batteryPercentage">--</span>
+                                    <span class="unit">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 数据图表区域 -->
+            <div class="panel chart-panel">
+                <h2>数据趋势图</h2>
+                <div class="chart-container">
+                    <canvas id="dataChart"></canvas>
+                </div>
+                <div class="chart-controls">
+                    <select id="chartDataType">
+                        <option value="in1_current">IN1电流</option>
+                        <option value="in1_voltage">IN1电压</option>
+                        <option value="in2_current">IN2电流</option>
+                        <option value="in2_voltage">IN2电压</option>
+                        <option value="in3_current">IN3电流</option>
+                        <option value="in3_voltage">IN3电压</option>
+                        <option value="in4_current">IN4电流</option>
+                        <option value="in4_voltage">IN4电压</option>
+                        <option value="in5_current">IN5电流</option>
+                        <option value="in5_voltage">IN5电压</option>
+                        <option value="in6_current">IN6电流</option>
+                        <option value="in6_voltage">IN6电压</option>
+                        <option value="in7_current">IN7电流</option>
+                        <option value="in7_voltage">IN7电压</option>
+                        <option value="in8_current">IN8电流</option>
+                        <option value="in8_voltage">IN8电压</option>
+                        <option value="in9_current">IN9电流</option>
+                        <option value="in9_voltage">IN9电压</option>
+                        <option value="in10_current">IN10电流</option>
+                        <option value="in10_voltage">IN10电压</option>
+                        <option value="ac_current">AC电流</option>
+                        <option value="vbat_voltage">VBAT电压</option>
+                        <option value="battery1_voltage">电池1电压</option>
+                        <option value="battery2_voltage">电池2电压</option>
+                        <option value="battery3_voltage">电池3电压</option>
+                        <option value="battery4_voltage">电池4电压</option>
+                        <option value="battery5_voltage">电池5电压</option>
+                        <option value="battery6_voltage">电池6电压</option>
+                        <option value="battery7_voltage">电池7电压</option>
+                        <option value="battery8_voltage">电池8电压</option>
+                        <option value="total_voltage">总电压</option>
+                        <option value="current">电流</option>
+                        <option value="temperature1">温度1</option>
+                        <option value="temperature2">温度2</option>
+                        <option value="temperature">环境温度</option>
+                        <option value="humidity">湿度</option>
+                    </select>
+                    <button id="clearChartBtn" class="btn-secondary">清除图表</button>
+                </div>
+            </div>
+
+            <!-- 通信日志 -->
+            <div class="panel log-panel">
+                <h2>通信日志</h2>
+                <div class="log-container">
+                    <div id="logContent" class="log-content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
