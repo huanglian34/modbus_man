@@ -6,18 +6,21 @@
     <title>数据记录管理 - Modbus数据监控面板</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/message.css') }}">
+    <!-- 引入Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入Chart.js库 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>数据记录管理</h1>
+            <h1><i class="fas fa-database"></i> 数据记录管理</h1>
             <div class="header-info">
                 <div class="welcome-message">
                     <span id="welcomeText"></span>
                 </div>
                 <div class="beijing-time">
+                    <i class="fas fa-clock"></i>
                     <span>北京时间: </span>
                     <span id="beijingTime"></span>
                 </div>
@@ -32,15 +35,15 @@
             <!-- 返回主页按钮 -->
             <div class="panel">
                 <div class="button-group">
-                    <button id="backToMainBtn" class="btn-primary">返回主页</button>
+                    <button id="backToMainBtn" class="btn-primary"><i class="fas fa-arrow-left"></i> 返回主页</button>
                 </div>
             </div>
 
             <!-- 记录会话列表 -->
             <div class="panel">
-                <h2>记录会话列表</h2>
+                <h2><i class="fas fa-list"></i> 记录会话列表</h2>
                 <div class="button-group">
-                    <button id="refreshRecordingsBtn" class="btn-secondary">刷新列表</button>
+                    <button id="refreshRecordingsBtn" class="btn-secondary"><i class="fas fa-sync-alt"></i> 刷新列表</button>
                 </div>
                 <div id="recordingsList" class="recordings-list">
                     <!-- 记录会话将在这里显示 -->
@@ -49,7 +52,7 @@
 
             <!-- 图表显示区域 -->
             <div class="panel chart-panel">
-                <h2>数据趋势图</h2>
+                <h2><i class="fas fa-chart-line"></i> 数据趋势图</h2>
                 <div class="chart-container">
                     <canvas id="dataChart"></canvas>
                 </div>
@@ -92,7 +95,7 @@
                         <option value="temperature">环境温度</option>
                         <option value="humidity">湿度</option>
                     </select>
-                    <button id="clearChartBtn" class="btn-secondary">清除图表</button>
+                    <button id="clearChartBtn" class="btn-secondary"><i class="fas fa-trash-alt"></i> 清除图表</button>
                 </div>
             </div>
         </div>
@@ -210,13 +213,13 @@
                     recordingElement.className = 'recording-item';
                     recordingElement.innerHTML = `
                         <div class="recording-info">
-                            <h3>${recording.name}</h3>
-                            <p>开始时间: ${formatDateTime(recording.start_time)}</p>
-                            <p>结束时间: ${recording.end_time ? formatDateTime(recording.end_time) : '进行中'}</p>
+                            <h3><i class="fas fa-file-alt"></i> ${recording.name}</h3>
+                            <p><i class="fas fa-clock"></i> 开始时间: ${formatDateTime(recording.start_time)}</p>
+                            <p><i class="fas fa-clock"></i> 结束时间: ${recording.end_time ? formatDateTime(recording.end_time) : '进行中'}</p>
                         </div>
                         <div class="recording-actions">
-                            <button class="btn-primary view-btn" data-id="${recording.id}">查看</button>
-                            <button class="btn-secondary delete-btn" data-id="${recording.id}">删除</button>
+                            <button class="btn-primary view-btn" data-id="${recording.id}"><i class="fas fa-eye"></i> 查看</button>
+                            <button class="btn-secondary delete-btn" data-id="${recording.id}"><i class="fas fa-trash"></i> 删除</button>
                         </div>
                     `;
                     elements.recordingsList.appendChild(recordingElement);

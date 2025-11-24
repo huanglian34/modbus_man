@@ -140,6 +140,30 @@ function setupEventListeners() {
     elements.managementBtn.addEventListener('click', () => {
         window.location.href = '/management';
     });
+    
+    // 监听刷新间隔输入框的变化
+    elements.refreshInterval.addEventListener('change', updateAutoRefreshInterval);
+    elements.refreshInterval.addEventListener('input', updateAutoRefreshInterval);
+}
+
+// 更新自动刷新间隔
+function updateAutoRefreshInterval() {
+    // 只有在自动刷新正在运行时才更新间隔
+    if (autoRefreshInterval) {
+        // 清除现有的定时器
+        clearInterval(autoRefreshInterval);
+        
+        // 获取新的间隔值
+        const interval = parseInt(elements.refreshInterval.value) || 5;
+        
+        // 设置新的定时器
+        autoRefreshInterval = setInterval(async () => {
+            await refreshData();
+        }, interval * 1000);
+        
+        // 显示消息
+        showMessage(`自动刷新间隔已更新为${interval}秒`, 'success');
+    }
 }
 
 // 更新欢迎标语
@@ -433,12 +457,17 @@ function updateSummaryData(data) {
 // 更新元素值并添加动画
 function updateElement(element, value) {
     if (element && value !== undefined && value !== null) {
-        // 添加更新动画
-        element.classList.remove('updated');
-        void element.offsetWidth; // 触发重排
-        element.classList.add('updated');
-        
-        element.textContent = value;
+        // 只有当值真正改变时才触发动画
+        if (element.textContent !== String(value)) {
+            // 添加更新动画
+            element.classList.remove('updated');
+            // 使用setTimeout确保动画能够重新触发
+            setTimeout(() => {
+                element.classList.add('updated');
+            }, 10);
+            
+            element.textContent = value;
+        }
     }
 }
 
@@ -446,12 +475,18 @@ function updateElement(element, value) {
 function updateStatusElement(element, value, statusMap) {
     if (element && value !== undefined && value !== null) {
         const statusText = statusMap[value] || value;
-        element.textContent = statusText;
         
-        // 添加更新动画
-        element.classList.remove('updated');
-        void element.offsetWidth;
-        element.classList.add('updated');
+        // 只有当值真正改变时才触发动画
+        if (element.textContent !== statusText) {
+            element.textContent = statusText;
+            
+            // 添加更新动画
+            element.classList.remove('updated');
+            // 使用setTimeout确保动画能够重新触发
+            setTimeout(() => {
+                element.classList.add('updated');
+            }, 10);
+        }
     }
 }
 

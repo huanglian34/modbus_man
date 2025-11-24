@@ -20,35 +20,37 @@ if not exist "app.py" (
     exit /b 1
 )
 
-REM 检查Python是否已安装
-python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo 错误: 未检测到Python
-    echo 请先安装Python 3.6或更高版本
-    echo.
-    pause
-    exit /b 1
-)
 
-echo 检查依赖包...
-echo.
+@REM REM 检查Python是否已安装
+@REM python --version >nul 2>&1
+@REM if %errorlevel% neq 0 (
+@REM     echo 错误: 未检测到Python
+@REM     echo 请先安装Python 3.6或更高版本
+@REM     echo.
+@REM     pause
+@REM     exit /b 1
+@REM )
 
-REM 检查并安装依赖
-if not exist "requirements.txt" (
-    echo 警告: 未找到 requirements.txt 文件
-    echo 跳过依赖检查...
-    echo.
-) else (
-    echo 安装依赖包...
-    pip install -r requirements.txt
-    if %errorlevel% neq 0 (
-        echo 警告: 依赖包安装失败，继续启动应用...
-        echo.
-    ) else (
-        echo 依赖包安装完成
-        echo.
-    )
-)
+@REM echo 检查依赖包...
+@REM echo.
+
+@REM REM 检查并安装依赖
+@REM if not exist "requirements.txt" (
+@REM     echo 警告: 未找到 requirements.txt 文件
+@REM     echo 跳过依赖检查...
+@REM     echo.
+@REM ) else (
+@REM     echo 安装依赖包...
+@REM     pip install -r requirements.txt
+@REM     if %errorlevel% neq 0 (
+@REM         echo 警告: 依赖包安装失败，继续启动应用...
+@REM         echo.
+@REM     ) else (
+@REM         echo 依赖包安装完成
+@REM         echo.
+@REM     )
+@REM )
+
 
 echo 启动Modbus数据监控面板...
 echo.

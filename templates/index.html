@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Modbus数据监控面板</title>
+    <title>斯络通&津工电子</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/message.css') }}">
+    <!-- 引入Font Awesome图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入Chart.js库 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Modbus数据监控面板</h1>
+            <h1><i class="fas fa-chart-line"></i> 斯络通产品数据监控面板</h1>
             <div class="header-info">
                 <div class="welcome-message">
                     <span id="welcomeText"></span>
                 </div>
                 <div class="beijing-time">
+                    <i class="fas fa-clock"></i>
                     <span>北京时间: </span>
                     <span id="beijingTime"></span>
                 </div>
@@ -31,44 +34,44 @@
         <div class="main-content">
             <!-- 配置面板 -->
             <div class="panel config-panel">
-                <h2>连接配置</h2>
+                <h2><i class="fas fa-cog"></i> 连接配置</h2>
                 <div class="form-group">
-                    <label for="serverIp">服务器IP:</label>
+                    <label for="serverIp"><i class="fas fa-network-wired"></i> 服务器IP:</label>
                     <input type="text" id="serverIp" value="127.0.0.1">
                 </div>
                 <div class="form-group">
-                    <label for="serverPort">端口:</label>
+                    <label for="serverPort"><i class="fas fa-plug"></i> 端口:</label>
                     <input type="number" id="serverPort" value="502">
                 </div>
                 <div class="button-group">
-                    <button id="connectBtn" class="btn-primary">连接</button>
-                    <button id="disconnectBtn" class="btn-secondary" disabled>断开</button>
+                    <button id="connectBtn" class="btn-primary"><i class="fas fa-link"></i> 连接</button>
+                    <button id="disconnectBtn" class="btn-secondary" disabled><i class="fas fa-unlink"></i> 断开</button>
                 </div>
             </div>
 
             <!-- 控制面板 -->
             <div class="panel control-panel">
-                <h2>控制面板</h2>
+                <h2><i class="fas fa-gamepad"></i> 控制面板</h2>
                 <div class="button-group">
-                    <button id="refreshBtn" class="btn-primary">手动刷新</button>
-                    <button id="autoRefreshBtn" class="btn-secondary">开始自动刷新</button>
+                    <button id="refreshBtn" class="btn-primary"><i class="fas fa-sync-alt"></i> 手动刷新</button>
+                    <button id="autoRefreshBtn" class="btn-secondary"><i class="fas fa-play"></i> 开始自动刷新</button>
                 </div>
                 <div class="form-group">
-                    <label for="refreshInterval">刷新间隔(秒):</label>
+                    <label for="refreshInterval"><i class="fas fa-history"></i> 刷新间隔(秒):</label>
                     <input type="number" id="refreshInterval" value="5" min="1" max="60">
                 </div>
                 
                 <!-- 数据记录控制 -->
                 <div class="recording-controls">
-                    <h3>数据记录</h3>
+                    <h3><i class="fas fa-database"></i> 数据记录</h3>
                     <div class="form-group">
-                        <label for="recordingName">记录名称:</label>
+                        <label for="recordingName"><i class="fas fa-tag"></i> 记录名称:</label>
                         <input type="text" id="recordingName" placeholder="输入记录名称">
                     </div>
                     <div class="button-group">
-                        <button id="startRecordingBtn" class="btn-primary" disabled>开始记录</button>
-                        <button id="stopRecordingBtn" class="btn-secondary" disabled>停止记录</button>
-                        <button id="managementBtn" class="btn-secondary">管理记录</button>
+                        <button id="startRecordingBtn" class="btn-primary" disabled><i class="fas fa-record-vinyl"></i> 开始记录</button>
+                        <button id="stopRecordingBtn" class="btn-secondary" disabled><i class="fas fa-stop"></i> 停止记录</button>
+                        <button id="managementBtn" class="btn-secondary"><i class="fas fa-tasks"></i> 管理记录</button>
                     </div>
                 </div>
             </div>
@@ -77,49 +80,49 @@
             <div class="data-section">
                 <!-- 二号板数据 -->
                 <div class="panel">
-                    <h2>二号板数据</h2>
+                    <h2><i class="fas fa-microchip"></i> 二号板数据</h2>
                     <div class="data-container">
                         <!-- 电源监测 - IN1到IN4 -->
                         <div class="data-card">
-                            <h3>电源监测 (IN1-IN4)</h3>
+                            <h3><i class="fas fa-bolt"></i> 电源监测 (IN1-IN4)</h3>
                             <div class="data-items">
                                 <div class="data-item">
-                                    <span class="label">IN1 电流:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN1 电流:</span>
                                     <span class="value" id="in1Current">--</span>
                                     <span class="unit">mA</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN1 电压:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN1 电压:</span>
                                     <span class="value" id="in1Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN2 电流:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN2 电流:</span>
                                     <span class="value" id="in2Current">--</span>
                                     <span class="unit">mA</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN2 电压:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN2 电压:</span>
                                     <span class="value" id="in2Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN3 电流:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN3 电流:</span>
                                     <span class="value" id="in3Current">--</span>
                                     <span class="unit">mA</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN3 电压:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN3 电压:</span>
                                     <span class="value" id="in3Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN4 电流:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN4 电流:</span>
                                     <span class="value" id="in4Current">--</span>
                                     <span class="unit">mA</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN4 电压:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN4 电压:</span>
                                     <span class="value" id="in4Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
@@ -128,45 +131,45 @@
 
                         <!-- 电源监测 - IN5到IN8 -->
                         <div class="data-card">
-                            <h3>电源监测 (IN5-IN8)</h3>
+                            <h3><i class="fas fa-bolt"></i> 电源监测 (IN5-IN8)</h3>
                             <div class="data-items">
                                 <div class="data-item">
-                                    <span class="label">IN5 电流:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN5 电流:</span>
                                     <span class="value" id="in5Current">--</span>
                                     <span class="unit">mA</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN5 电压:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN5 电压:</span>
                                     <span class="value" id="in5Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN6 电流:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN6 电流:</span>
                                     <span class="value" id="in6Current">--</span>
                                     <span class="unit">mA</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN6 电压:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN6 电压:</span>
                                     <span class="value" id="in6Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN7 电流:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN7 电流:</span>
                                     <span class="value" id="in7Current">--</span>
                                     <span class="unit">mA</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN7 电压:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN7 电压:</span>
                                     <span class="value" id="in7Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN8 电流:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN8 电流:</span>
                                     <span class="value" id="in8Current">--</span>
                                     <span class="unit">mA</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN8 电压:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN8 电压:</span>
                                     <span class="value" id="in8Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
@@ -175,35 +178,35 @@
 
                         <!-- 电源监测 - IN9到AC -->
                         <div class="data-card">
-                            <h3>电源监测 (IN9-AC)</h3>
+                            <h3><i class="fas fa-bolt"></i> 电源监测 (IN9-AC)</h3>
                             <div class="data-items">
                                 <div class="data-item">
-                                    <span class="label">IN9 电流:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN9 电流:</span>
                                     <span class="value" id="in9Current">--</span>
                                     <span class="unit">mA</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN9 电压:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN9 电压:</span>
                                     <span class="value" id="in9Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN10 电流:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN10 电流:</span>
                                     <span class="value" id="in10Current">--</span>
                                     <span class="unit">mA</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">IN10 电压:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> IN10 电压:</span>
                                     <span class="value" id="in10Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">AC 电流:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> AC 电流:</span>
                                     <span class="value" id="acCurrent">--</span>
                                     <span class="unit">A</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">VBAT 输出电压:</span>
+                                    <span class="label"><i class="fas fa-bolt fa-xs"></i> VBAT 输出电压:</span>
                                     <span class="value" id="vbatVoltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
@@ -212,15 +215,15 @@
 
                         <!-- 环境监测 -->
                         <div class="data-card">
-                            <h3>环境监测</h3>
+                            <h3><i class="fas fa-thermometer-half"></i> 环境监测</h3>
                             <div class="data-items">
                                 <div class="data-item">
-                                    <span class="label">温度:</span>
+                                    <span class="label"><i class="fas fa-temperature-high"></i> 温度:</span>
                                     <span class="value" id="temperature">--</span>
                                     <span class="unit">℃</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">湿度:</span>
+                                    <span class="label"><i class="fas fa-tint"></i> 湿度:</span>
                                     <span class="value" id="humidity">--</span>
                                     <span class="unit">%RH</span>
                                 </div>
@@ -229,18 +232,18 @@
 
                         <!-- 安全状态 -->
                         <div class="data-card">
-                            <h3>安全状态</h3>
+                            <h3><i class="fas fa-shield-alt"></i> 安全状态</h3>
                             <div class="data-items">
                                 <div class="data-item">
-                                    <span class="label">门状态:</span>
+                                    <span class="label"><i class="fas fa-door-open"></i> 门状态:</span>
                                     <span class="value" id="doorStatus">--</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">水浸状态:</span>
+                                    <span class="label"><i class="fas fa-water"></i> 水浸状态:</span>
                                     <span class="value" id="waterStatus">--</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">AC检测状态:</span>
+                                    <span class="label"><i class="fas fa-plug"></i> AC检测状态:</span>
                                     <span class="value" id="acStatus">--</span>
                                 </div>
                             </div>
@@ -250,29 +253,29 @@
 
                 <!-- BMS保护板数据 -->
                 <div class="panel" style="margin-top: 20px;">
-                    <h2>BMS保护板数据</h2>
+                    <h2><i class="fas fa-car-battery"></i> BMS保护板数据</h2>
                     <div class="data-container">
                         <!-- 电池电压 - 1到4 -->
                         <div class="data-card">
-                            <h3>电池电压 (1-4)</h3>
+                            <h3><i class="fas fa-battery-half"></i> 电池电压 (1-4)</h3>
                             <div class="data-items">
                                 <div class="data-item">
-                                    <span class="label">电池1:</span>
+                                    <span class="label"><i class="fas fa-bolt"></i> 电池1:</span>
                                     <span class="value" id="battery1Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">电池2:</span>
+                                    <span class="label"><i class="fas fa-bolt"></i> 电池2:</span>
                                     <span class="value" id="battery2Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">电池3:</span>
+                                    <span class="label"><i class="fas fa-bolt"></i> 电池3:</span>
                                     <span class="value" id="battery3Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">电池4:</span>
+                                    <span class="label"><i class="fas fa-bolt"></i> 电池4:</span>
                                     <span class="value" id="battery4Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
@@ -281,25 +284,25 @@
 
                         <!-- 电池电压 - 5到8 -->
                         <div class="data-card">
-                            <h3>电池电压 (5-8)</h3>
+                            <h3><i class="fas fa-battery-half"></i> 电池电压 (5-8)</h3>
                             <div class="data-items">
                                 <div class="data-item">
-                                    <span class="label">电池5:</span>
+                                    <span class="label"><i class="fas fa-bolt"></i> 电池5:</span>
                                     <span class="value" id="battery5Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">电池6:</span>
+                                    <span class="label"><i class="fas fa-bolt"></i> 电池6:</span>
                                     <span class="value" id="battery6Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">电池7:</span>
+                                    <span class="label"><i class="fas fa-bolt"></i> 电池7:</span>
                                     <span class="value" id="battery7Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">电池8:</span>
+                                    <span class="label"><i class="fas fa-bolt"></i> 电池8:</span>
                                     <span class="value" id="battery8Voltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
@@ -308,25 +311,25 @@
 
                         <!-- 系统参数 -->
                         <div class="data-card">
-                            <h3>系统参数</h3>
+                            <h3><i class="fas fa-cogs"></i> 系统参数</h3>
                             <div class="data-items">
                                 <div class="data-item">
-                                    <span class="label">总电压:</span>
+                                    <span class="label"><i class="fas fa-bolt"></i> 总电压:</span>
                                     <span class="value" id="totalVoltage">--</span>
                                     <span class="unit">V</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">电流:</span>
+                                    <span class="label"><i class="fas fa-current"></i> 电流:</span>
                                     <span class="value" id="current">--</span>
                                     <span class="unit">A</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">温度1:</span>
+                                    <span class="label"><i class="fas fa-temperature-high"></i> 温度1:</span>
                                     <span class="value" id="temperature1">--</span>
                                     <span class="unit">℃</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">温度2:</span>
+                                    <span class="label"><i class="fas fa-temperature-high"></i> 温度2:</span>
                                     <span class="value" id="temperature2">--</span>
                                     <span class="unit">℃</span>
                                 </div>
@@ -335,18 +338,18 @@
 
                         <!-- 状态信息 -->
                         <div class="data-card">
-                            <h3>状态信息</h3>
+                            <h3><i class="fas fa-info-circle"></i> 状态信息</h3>
                             <div class="data-items">
                                 <div class="data-item">
-                                    <span class="label">平衡状态:</span>
+                                    <span class="label"><i class="fas fa-balance-scale"></i> 平衡状态:</span>
                                     <span class="value" id="balanceStatus">--</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">充放电状态:</span>
+                                    <span class="label"><i class="fas fa-exchange-alt"></i> 充放电状态:</span>
                                     <span class="value" id="chargeDischargeStatus">--</span>
                                 </div>
                                 <div class="data-item">
-                                    <span class="label">电量:</span>
+                                    <span class="label"><i class="fas fa-battery-three-quarters"></i> 电量:</span>
                                     <span class="value" id="batteryPercentage">--</span>
                                     <span class="unit">%</span>
                                 </div>
@@ -358,7 +361,7 @@
 
             <!-- 数据图表区域 -->
             <div class="panel chart-panel">
-                <h2>数据趋势图</h2>
+                <h2><i class="fas fa-chart-bar"></i> 数据趋势图</h2>
                 <div class="chart-container">
                     <canvas id="dataChart"></canvas>
                 </div>
@@ -401,13 +404,13 @@
                         <option value="temperature">环境温度</option>
                         <option value="humidity">湿度</option>
                     </select>
-                    <button id="clearChartBtn" class="btn-secondary">清除图表</button>
+                    <button id="clearChartBtn" class="btn-secondary"><i class="fas fa-trash-alt"></i> 清除图表</button>
                 </div>
             </div>
 
             <!-- 通信日志 -->
             <div class="panel log-panel">
-                <h2>通信日志</h2>
+                <h2><i class="fas fa-file-alt"></i> 通信日志</h2>
                 <div class="log-container">
                     <div id="logContent" class="log-content"></div>
                 </div>
