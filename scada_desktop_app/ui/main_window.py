@@ -127,7 +127,7 @@ class SCADAMainWindow(QMainWindow):
         self.adjust_layout_for_scale()
         
     def init_ui(self):
-        self.setWindowTitle('斯络通上位机监控系统')
+        self.setWindowTitle('津工电子上位机监控系统')
         
         # 应用缩放样式
         self.apply_scaled_styles()

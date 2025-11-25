@@ -29,8 +29,8 @@ opts = [
     # 指定应用程序名称
     '--name=斯络通上位机监控系统',
     
-    # 指定图标（如果有的话）
-    # '--icon=icon.ico',
+    # 指定图标
+    '--icon=app_icon.ico',
     
     # 包含额外的文件和目录
     '--add-data=ui;ui',
