@@ -3,9 +3,15 @@ import json
 import logging
 import sqlite3
 from datetime import datetime
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_from_directory
 from pymodbus.client import ModbusTcpClient
 from pymodbus.exceptions import ModbusException
+import ipaddress
+import socket
+import threading
+import time
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
 
 # 设置环境变量以确保UTF-8编码
 os.environ['PYTHONIOENCODING'] = 'utf-8'
@@ -32,7 +38,7 @@ DB_FILE = 'modbus_data.db'
 
 # 存储Modbus连接配置
 modbus_config = {
-    'host': '127.0.0.1',
+    'host': '192.168.1.10',
     'port': 502
 }
 
@@ -632,6 +638,116 @@ def clear_logs():
 def refresh_data():
     """手动刷新数据"""
     return get_data()
+
+@app.route('/Modbus寄存器地址手册 .html')
+def modbus_manual():
+    """提供Modbus寄存器地址手册"""
+    return send_from_directory('.', 'Modbus寄存器地址手册 .html')
+
+
+def scan_modbus_device(ip, port=502, timeout=2):
+    """扫描单个Modbus设备"""
+    try:
+        # 创建Modbus TCP客户端
+        client = ModbusTcpClient(ip, port, timeout=timeout)
+        
+        # 尝试连接
+        if client.connect():
+            # 尝试读取一个寄存器来验证是否是Modbus设备
+            result = client.read_holding_registers(0x0000, 1, slave=1)
+            client.close()
+            
+            # 如果没有错误，说明是Modbus设备
+            return not result.isError()
+        else:
+            client.close()
+            return False
+    except Exception as e:
+        if 'client' in locals():
+            client.close()
+        return False
+
+
+def get_local_network_range():
+    """获取本地网络范围"""
+    try:
+        # 获取本机IP地址
+        hostname = socket.gethostname()
+        local_ip = socket.gethostbyname(hostname)
+        
+        # 根据本地IP地址生成网络范围
+        ip_parts = local_ip.split('.')
+        if len(ip_parts) == 4:
+            # 生成C类网络范围 (例如: 192.168.1.0/24)
+            network_base = f"{ip_parts[0]}.{ip_parts[1]}.{ip_parts[2]}"
+            return f"{network_base}.0/24"
+        else:
+            # 默认返回常见的局域网范围
+            return "192.168.1.0/24"
+    except:
+        # 默认返回常见的局域网范围
+        return "192.168.1.0/24"
+
+
+def generate_ip_range(network):
+    """生成IP范围内的所有IP地址"""
+    try:
+        # 解析网络地址
+        network_obj = ipaddress.ip_network(network, strict=False)
+        return [str(ip) for ip in network_obj.hosts()]
+    except Exception as e:
+        # 如果解析失败，返回默认范围
+        default_network = ipaddress.ip_network("192.168.1.0/24", strict=False)
+        return [str(ip) for ip in default_network.hosts()]
+
+
+@app.route('/api/scan-devices', methods=['POST'])
+def scan_devices():
+    """扫描网络中的Modbus设备"""
+    try:
+        data = request.json
+        network = data.get('network', get_local_network_range())
+        port = int(data.get('port', 502))
+        timeout = int(data.get('timeout', 1))  # 减少超时时间
+        max_workers = int(data.get('max_workers', 50))  # 默认并发数
+        
+        # 生成IP地址列表
+        ip_list = generate_ip_range(network)
+        
+        # 存储发现的设备
+        found_devices = []
+        
+        # 使用线程池并发扫描
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # 提交所有扫描任务
+            future_to_ip = {executor.submit(scan_modbus_device, ip, port, timeout): ip for ip in ip_list}
+            
+            # 处理完成的任务
+            for future in concurrent.futures.as_completed(future_to_ip):
+                ip = future_to_ip[future]
+                try:
+                    if future.result():
+                        found_devices.append({
+                            'ip': ip,
+                            'port': port
+                        })
+                        # 记录发现的设备
+                        log_communication(f"发现Modbus设备: {ip}:{port}")
+                except Exception as e:
+                    # 忽略单个IP扫描的错误
+                    pass
+        
+        return jsonify({
+            'success': True,
+            'devices': found_devices,
+            'count': len(found_devices)
+        })
+    except Exception as e:
+        log_communication(f"扫描设备时出错: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

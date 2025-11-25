@@ -88,7 +88,18 @@ const elements = {
     
     // 新增元素
     beijingTime: document.getElementById('beijingTime'),
-    welcomeText: document.getElementById('welcomeText')
+    welcomeText: document.getElementById('welcomeText'),
+    
+    // 扫描设备相关元素
+    scanDevicesBtn: document.getElementById('scanDevicesBtn'),
+    stopScanBtn: document.getElementById('stopScanBtn'),
+    scanResultsContainer: document.getElementById('scanResultsContainer'),
+    scanProgress: document.getElementById('scanProgress'),
+    scanProgressText: document.getElementById('scanProgressText'),
+    scanResultsList: document.getElementById('scanResultsList'),
+    
+    // 悬浮刷新按钮
+    floatingRefreshBtn: document.getElementById('floatingRefreshBtn')
 };
 
 // 全局变量
@@ -141,9 +152,18 @@ function setupEventListeners() {
         window.location.href = '/management';
     });
     
+    // 扫描设备事件
+    elements.scanDevicesBtn.addEventListener('click', scanDevices);
+    elements.stopScanBtn.addEventListener('click', stopScanDevices);
+    
     // 监听刷新间隔输入框的变化
     elements.refreshInterval.addEventListener('change', updateAutoRefreshInterval);
     elements.refreshInterval.addEventListener('input', updateAutoRefreshInterval);
+    
+    // 悬浮刷新按钮事件
+    if (elements.floatingRefreshBtn) {
+        elements.floatingRefreshBtn.addEventListener('click', refreshData);
+    }
 }
 
 // 更新自动刷新间隔
@@ -1035,6 +1055,143 @@ function clearChart() {
     }
 }
 
+// 全局变量用于控制扫描过程
+let scanAbortController = null;
+let isScanning = false;
+let scannedCount = 0;
+let totalCount = 0;
+
+// 扫描网络中的Modbus设备
+async function scanDevices() {
+    // 如果已经在扫描，直接返回
+    if (isScanning) return;
+    
+    // 显示扫描进度
+    elements.scanResultsContainer.style.display = 'block';
+    elements.scanProgress.style.display = 'block';
+    elements.scanResultsList.innerHTML = '';
+    
+    // 显示停止扫描按钮
+    elements.scanDevicesBtn.style.display = 'none';
+    elements.stopScanBtn.style.display = 'inline-block';
+    
+    // 初始化扫描控制
+    isScanning = true;
+    scanAbortController = new AbortController();
+    scannedCount = 0;
+    
+    // 更新进度文本
+    updateScanProgress();
+    
+    try {
+        const response = await fetch('/api/scan-devices', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                network: '192.168.1.0/24', // 默认网络范围
+                port: 502, // 默认Modbus端口
+                timeout: 1, // 减少超时时间以加快扫描
+                max_workers: 100 // 增加并发数以加快扫描
+            }),
+            signal: scanAbortController.signal
+        });
+        
+        const result = await response.json();
+        
+        // 隐藏进度条
+        elements.scanProgress.style.display = 'none';
+        
+        // 恢复扫描按钮
+        elements.scanDevicesBtn.style.display = 'inline-block';
+        elements.stopScanBtn.style.display = 'none';
+        isScanning = false;
+        
+        if (result.success) {
+            if (result.devices.length > 0) {
+                // 显示扫描结果
+                result.devices.forEach(device => {
+                    const deviceElement = document.createElement('div');
+                    deviceElement.className = 'scan-result-item';
+                    deviceElement.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee;">
+                            <div>
+                                <strong>${device.ip}</strong>
+                                <span style="margin-left: 10px; color: #666;">端口: ${device.port}</span>
+                            </div>
+                            <button class="btn-secondary btn-sm" onclick="selectDevice('${device.ip}', ${device.port})" style="padding: 4px 8px; font-size: 12px;">
+                                <i class="fas fa-check"></i> 选择
+                            </button>
+                        </div>
+                    `;
+                    elements.scanResultsList.appendChild(deviceElement);
+                });
+                
+                showMessage(`扫描完成，发现 ${result.devices.length} 个设备`, 'success');
+            } else {
+                elements.scanResultsList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">未发现Modbus设备</p>';
+                showMessage('扫描完成，未发现设备', 'info');
+            }
+        } else {
+            elements.scanResultsList.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">扫描失败: ${result.error}</p>`;
+            showMessage(`扫描失败: ${result.error}`, 'error');
+        }
+    } catch (error) {
+        // 检查是否是用户主动停止扫描
+        if (error.name === 'AbortError') {
+            elements.scanResultsList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">扫描已停止</p>';
+            showMessage('扫描已停止', 'info');
+        } else {
+            // 隐藏进度条
+            elements.scanProgress.style.display = 'none';
+            elements.scanResultsList.innerHTML = `<p style="color: red; text-align: center; padding: 20px;">扫描出错: ${error.message}</p>`;
+            showMessage(`扫描出错: ${error.message}`, 'error');
+        }
+        
+        // 恢复扫描按钮
+        elements.scanDevicesBtn.style.display = 'inline-block';
+        elements.stopScanBtn.style.display = 'none';
+        isScanning = false;
+    }
+}
+
+// 更新扫描进度显示
+function updateScanProgress() {
+    if (isScanning) {
+        elements.scanProgressText.textContent = `${scannedCount}/254`;
+        setTimeout(updateScanProgress, 100); // 每100毫秒更新一次
+    }
+}
+
+// 停止扫描设备
+function stopScanDevices() {
+    if (isScanning && scanAbortController) {
+        scanAbortController.abort();
+        isScanning = false;
+        
+        // 恢复按钮状态
+        elements.scanDevicesBtn.style.display = 'inline-block';
+        elements.stopScanBtn.style.display = 'none';
+        
+        // 更新界面
+        elements.scanProgress.style.display = 'none';
+        elements.scanResultsList.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">扫描已停止</p>';
+        
+        showMessage('正在停止扫描...', 'info');
+    }
+}
+
+// 选择设备并填充到连接配置中
+function selectDevice(ip, port) {
+    elements.serverIp.value = ip;
+    elements.serverPort.value = port;
+    showMessage(`已选择设备: ${ip}:${port}`, 'success');
+    
+    // 自动滚动到连接配置区域
+    document.querySelector('.config-panel').scrollIntoView({ behavior: 'smooth' });
+}
+
 // 页面可见性变化时处理
 document.addEventListener('visibilitychange', function() {
     if (document.hidden && autoRefreshInterval) {
@@ -1059,6 +1216,14 @@ window.addEventListener('beforeunload', function() {
 
 // 初始化应用
 document.addEventListener('DOMContentLoaded', initApp);
+
+// 在DOMContentLoaded事件监听器之后添加
+document.addEventListener('DOMContentLoaded', function() {
+    // 确保扫描结果容器在页面加载时是隐藏的
+    if (elements.scanResultsContainer) {
+        elements.scanResultsContainer.style.display = 'none';
+    }
+});
 
 // 添加清除日志按钮事件监听器
 document.addEventListener('DOMContentLoaded', function() {

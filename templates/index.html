@@ -47,6 +47,21 @@
                     <button id="connectBtn" class="btn-primary"><i class="fas fa-link"></i> 连接</button>
                     <button id="disconnectBtn" class="btn-secondary" disabled><i class="fas fa-unlink"></i> 断开</button>
                 </div>
+                <!-- 添加扫描设备按钮 -->
+                <div class="button-group" style="margin-top: 15px;">
+                    <button id="scanDevicesBtn" class="btn-secondary"><i class="fas fa-search"></i> 扫描设备</button>
+                    <button id="stopScanBtn" class="btn-secondary" style="display: none;"><i class="fas fa-stop"></i> 停止扫描</button>
+                </div>
+                <!-- 扫描结果容器 -->
+                <div id="scanResultsContainer" style="display: none; margin-top: 15px;">
+                    <h3><i class="fas fa-list"></i> 扫描结果</h3>
+                    <div id="scanProgress" style="display: none;">
+                        <p><i class="fas fa-spinner fa-spin"></i> 正在扫描设备，请稍候... <span id="scanProgressText"></span></p>
+                    </div>
+                    <div id="scanResultsList" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 10px; margin-top: 10px;">
+                        <!-- 扫描结果将在这里显示 -->
+                    </div>
+                </div>
             </div>
 
             <!-- 控制面板 -->
@@ -72,6 +87,16 @@
                         <button id="startRecordingBtn" class="btn-primary" disabled><i class="fas fa-record-vinyl"></i> 开始记录</button>
                         <button id="stopRecordingBtn" class="btn-secondary" disabled><i class="fas fa-stop"></i> 停止记录</button>
                         <button id="managementBtn" class="btn-secondary"><i class="fas fa-tasks"></i> 管理记录</button>
+                    </div>
+                </div>
+                
+                <!-- Modbus手册链接 -->
+                <div class="form-group" style="margin-top: 20px;">
+                    <h3><i class="fas fa-book"></i> 技术文档</h3>
+                    <div class="button-group">
+                        <button id="modbusManualBtn" class="btn-secondary" onclick="window.open('/Modbus寄存器地址手册 .html', '_blank')">
+                            <i class="fas fa-external-link-alt"></i> Modbus寄存器手册
+                        </button>
                     </div>
                 </div>
             </div>
@@ -416,6 +441,13 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- 悬浮刷新按钮 -->
+    <div class="floating-refresh-btn">
+        <button id="floatingRefreshBtn" class="btn-primary" title="手动刷新">
+            <i class="fas fa-sync-alt"></i>
+        </button>
     </div>
 
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>

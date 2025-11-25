@@ -478,6 +478,63 @@ header h1 {
     border-bottom: none;
 }
 
+/* 扫描结果样式 */
+#scanResultsContainer {
+    background: rgba(248, 249, 250, 0.9);
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+#scanResultsContainer h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#scanProgress {
+    text-align: center;
+    padding: 15px;
+    color: #7f8c8d;
+}
+
+#scanProgress i {
+    margin-right: 10px;
+}
+
+#scanResultsList {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    margin-top: 10px;
+    background: white;
+}
+
+.scan-result-item {
+    margin-bottom: 5px;
+}
+
+.scan-result-item:last-child {
+    margin-bottom: 0;
+}
+
+.scan-result-item button {
+    min-width: auto;
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+}
+
 /* 响应式设计 */
 @media (max-width: 1200px) {
     .main-content {
@@ -621,4 +678,61 @@ header h1 {
 
 .icon-large {
     font-size: 1.5rem;
+}
+
+/* 悬浮刷新按钮 */
+.floating-refresh-btn {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1000;
+}
+
+.floating-refresh-btn .btn-primary {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.floating-refresh-btn .btn-primary:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.floating-refresh-btn .btn-primary:active {
+    transform: translateY(0) scale(0.95);
+}
+
+/* 响应式设计 - 为小屏幕优化扫描结果 */
+@media (max-width: 768px) {
+    #scanResultsList {
+        max-height: 150px;
+    }
+    
+    .scan-result-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .scan-result-item button {
+        align-self: flex-end;
+    }
+    
+    /* 调整小屏幕上的悬浮按钮位置 */
+    .floating-refresh-btn {
+        right: 15px;
+        bottom: 15px;
+    }
+    
+    .floating-refresh-btn .btn-primary {
+        width: 45px;
+        height: 45px;
+    }
 }
